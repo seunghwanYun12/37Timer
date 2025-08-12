@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>3-7 운동 타이머 (iOS 호환 완전판)</title>
+<style>
+  body { font-family: Arial; text-align: center; margin-top: 4px; }
+  #status { font-size: 80px; margin: 15px; }
+  #timerDisplay { 
+    font-size: 124px; 
+    margin: 40px 0;  
+    color: red; 
+    font-weight: bold; 
+    display: block;
+  }
+  .btn-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  button { 
+    font-size: 35px;
+    padding: 20px;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>3-7 운동 타이머</h1>
+<div id="status">대기 중</div>
+<div id="timerDisplay">00:00</div>
+
+<div class="btn-container">
+  <button id="btnStart">시작</button>
+  <button id="btnRest">휴식</button>
+  <button id="btnEndSet">세트 종료</button>
+  <button id="btnStop">종료</button>
+</div>
+
+<script>
+let restClickCount = 0;
+let timer;
+let countdownInterval;
+let audioUnlocked = false;
+
+// iOS Safari 오디오 권한 확보 함수 (빈 음성 재생)
+function unlockAudio() {
+  if (!audioUnlocked) {
+    const utter = new SpeechSynthesisUtterance(" ");
+    utter.lang = 'ko-KR';
+    speechSynthesis.speak(utter);
+    audioUnlocked = true;
+    console.log("🔓 iOS 오디오 권한 확보됨");
+  }
+}
+
+// 음성 안내 함수
+function speak(text) {
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'ko-KR';
+  speechSynthesis.speak(utter);
+}
+
+// 타이머 초기화
+function clearTimer() {
+  if (timer) clearTimeout(timer);
+  if (countdownInterval) clearInterval(countdownInterval);
+}
+
+// 시간 표시 업데이트
+function updateDisplay(sec) {
+  let min = Math.floor(sec / 60);
+  let s = sec % 60;
+  document.getElementById("timerDisplay").textContent =
+    `${min}:${s < 10 ? '0' : ''}${s}`;
+}
+
+// 상태 표시 + 음성 재생
+function playSound(text) {
+  document.getElementById("status").textContent = text;
+  speak(text);
+  console.log("🔊 " + text);
+}
+
+// 카운트다운 시작
+function startCountdown(seconds, message) {
+  let timeLeft = seconds;
+  updateDisplay(timeLeft);
+
+  countdownInterval = setInterval(() => {
+    timeLeft--;
+    updateDisplay(timeLeft);
+
+    if (timeLeft <= 3 && timeLeft > 0) {
+      speak(timeLeft.toString());  // 3,2,1 음성 안내
+    }
+
+    if (timeLeft <= 0) {
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
+
+  timer = setTimeout(() => {
+    playSound(message);
+  }, seconds * 1000);
+}
+
+// 시작 버튼 클릭 시 실행
+function startSequence() {
+  clearTimer();
+  restClickCount = 0;
+  startCountdown(5, "3번 시작");
+  document.getElementById("status").textContent = "3번 시작";
+}
+
+// 휴식 버튼 클릭 시 실행
+function restButton() {
+  clearTimer();
+  restClickCount++;
+  let startNumber = restClickCount + 3;
+  if (restClickCount <= 4) {
+    startCountdown(15, `${startNumber}번 시작`);
+    document.getElementById("status").textContent = `${startNumber}번 시작`;
+  } else {
+    document.getElementById("status").textContent = "휴식 버튼은 4번까지만 유효";
+    document.getElementById("timerDisplay").textContent = "00:00";
+  }
+}
+
+// 세트 종료 버튼 클릭 시 실행
+function endSet() {
+  clearTimer();
+  startCountdown(150, "두번째 라운드 시작");
+  document.getElementById("status").textContent = "두번째 라운드 시작";
+}
+
+// 종료 버튼 클릭 시 실행
+function stopTimer() {
+  clearTimer();
+  restClickCount = 0;
+  document.getElementById("status").textContent = "대기 중";
+  document.getElementById("timerDisplay").textContent = "00:00";
+}
+
+// 버튼 클릭 처리: 오디오 권한 확보 후 함수 실행
+function handleButtonClick(action) {
+  unlockAudio();
+  action();
+}
+
+// 버튼 이벤트 연결
+document.getElementById("btnStart").addEventListener("click", () => handleButtonClick(startSequence));
+document.getElementById("btnRest").addEventListener("click", () => handleButtonClick(restButton));
+document.getElementById("btnEndSet").addEventListener("click", () => handleButtonClick(endSet));
+document.getElementById("btnStop").addEventListener("click", () => handleButtonClick(stopTimer));
+</script>
+
+</body>
+</html>
