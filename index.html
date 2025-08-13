@@ -48,6 +48,15 @@ let timer;
 let countdownInterval;
 let audioUnlocked = false;
 
+const nativeCountMap = {
+  "3": "세",
+  "4": "네",
+  "5": "다섯",
+  "6": "여섯",
+  "7": "일곱",
+};
+
+
 // iOS Safari 오디오 권한 확보 함수 (빈 음성 재생)
 function unlockAudio() {
   if (!audioUnlocked) {
@@ -114,8 +123,9 @@ function startCountdown(seconds, message) {
 function startSequence() {
   clearTimer();
   restClickCount = 0;
-  startCountdown(5, "3번 시작");
-  document.getElementById("status").textContent = "3번 시작";
+  startNumber = 3
+  startCountdown(5, `${nativeCountMap[startNumber]}번 시작`);
+  document.getElementById("status").textContent = `${nativeCountMap[startNumber]}번 시작`;
 }
 
 // 휴식 버튼 클릭 시 실행
@@ -124,10 +134,10 @@ function restButton() {
   restClickCount++;
   let startNumber = restClickCount + 3;
   if (restClickCount <= 4) {
-    startCountdown(15, `${startNumber}번 시작`);
-    document.getElementById("status").textContent = `${startNumber}번 시작`;
+    startCountdown(15, `${nativeCountMap[startNumber]}번 시작`);
+    document.getElementById("status").textContent = `${nativeCountMap[startNumber]}번 시작`;
   } else {
-    document.getElementById("status").textContent = "휴식 버튼은 4번까지만 유효";
+    document.getElementById("status").textContent = "휴식 버튼은 네번까지만 유효";
     document.getElementById("timerDisplay").textContent = "00:00";
   }
 }
@@ -135,7 +145,7 @@ function restButton() {
 // 세트 종료 버튼 클릭 시 실행
 function endSet() {
   clearTimer();
-  startCountdown(150, "두번째 라운드 시작");
+  startCountdown(180, "두번째 라운드 시작");
   document.getElementById("status").textContent = "두번째 라운드 시작";
 }
 
