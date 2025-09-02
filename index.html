@@ -145,6 +145,7 @@ function restButton() {
 // 세트 종료 버튼 클릭 시 실행
 function endSet() {
   clearTimer();
+  restClickCount = 0;
   startCountdown(180, "두번째 라운드 시작");
   document.getElementById("status").textContent = "두번째 라운드 시작";
 }
